@@ -41,11 +41,11 @@ Source: "{#SourceDir}\log4net.config"; DestDir: "{app}"; Flags: ignoreversion
 Name: "{userprograms}\Voicemeeter Hub"; Filename: "{app}\VoicemeeterHub.exe"
 
 [Tasks]
-Name: "startup"; Description: "Start Voicemeeter Hub automatically when I sign in to Windows"; GroupDescription: "Additional tasks:"; Flags: unchecked
+Name: "startup"; Description: "Start Voicemeeter Hub automatically when I sign in to Windows"; GroupDescription: "Additional tasks:"; Flags: checkedonce
 
 [Registry]
-; Optional autostart at logon (only when the task above is selected). The hub exits on its own when
-; idle and clients relaunch it on demand, so autostart is off by default.
+; Optional autostart at logon (enabled by default). The hub runs as a tray-resident app and exits
+; only when the user chooses Exit from the tray menu.
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "VoicemeeterHub"; ValueData: """{app}\VoicemeeterHub.exe"""; Flags: uninsdeletevalue; Tasks: startup
 
 [Run]

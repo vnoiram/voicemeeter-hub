@@ -80,7 +80,7 @@ release, or built locally). It:
 - needs **no environment variable**: that path is exactly where the Stream Dock plugin already
   looks, so the plugin auto-discovers and launches the hub,
 - supports silent install (`voicemeeter-hub-<ver>-setup.exe /VERYSILENT`) and offers an optional
-  "start at sign-in" task (off by default, since clients start the hub on demand).
+  "start at sign-in" task (on by default for tray-resident operation).
 
 Other applications can find the running hub through `%LOCALAPPDATA%\voicemeeter-hub\endpoint.json`,
 or set `VOICEMEETER_HUB_EXE` to the installed path to have them launch it too.
@@ -106,6 +106,8 @@ Launch `VoicemeeterHub.exe`. It:
 
 - refuses to start a second instance (a global mutex; the first instance keeps serving),
 - listens on loopback and writes the endpoint file,
-- exits automatically after 60 seconds with no connected clients, releasing the Remote API session.
+- stays resident in the Windows notification area without opening a console window,
+- shows a tray menu with status, log opening, and exit actions.
 
-Clients are expected to auto-start it on demand and connect.
+Exit it from the tray menu when you want to stop the server. Clients can discover the running hub
+through the endpoint file and connect.

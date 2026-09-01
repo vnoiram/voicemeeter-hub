@@ -10,28 +10,35 @@ namespace VoicemeeterHub;
 /// <summary>
 ///     The Voicemeeter Hub server: one loopback WebSocket endpoint that owns the single
 ///     <see cref="VoicemeeterClient"/> Remote API session and the single state poller, and fans
-///     state out to every subscribed client. It exits after an idle period with no connections so
-///     it does not hold the Remote API session open forever; clients restart it on demand.
+///     state out to every subscribed client. The default resident mode keeps serving until the
+///     process is asked to shut down; tests and console-style hosts can opt into an idle timeout.
 /// </summary>
 public sealed class HubServer : IDisposable
 {
     private static readonly ILog Log = LogManager.GetLogger(typeof(HubServer));
-    private static readonly TimeSpan IdleTimeout = TimeSpan.FromSeconds(60);
 
     private readonly ConcurrentDictionary<HubConnection, byte> _connections = new();
     private readonly IVoicemeeterClient _client;
     private readonly HubStateService _state;
     private readonly TaskCompletionSource<int> _listening = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TimeSpan? _idleTimeout;
     private long _lastActivityTicks;
     private int _disposed;
+
+    public static TimeSpan DefaultIdleTimeout { get; } = TimeSpan.FromSeconds(60);
 
     /// <param name="client">
     ///     The Remote API client. Defaults to a real <see cref="VoicemeeterClient"/>; tests inject
     ///     a fake so the server can run without the native DLL.
     /// </param>
-    public HubServer(IVoicemeeterClient? client = null)
+    /// <param name="idleTimeout">
+    ///     Optional idle timeout. <see langword="null"/> disables idle shutdown for tray-resident
+    ///     mode; a value preserves the previous on-demand daemon behavior.
+    /// </param>
+    public HubServer(IVoicemeeterClient? client = null, TimeSpan? idleTimeout = null)
     {
         _client = client ?? new VoicemeeterClient();
+        _idleTimeout = idleTimeout;
         _state = new HubStateService(_client, () => AnySubscriber);
         _state.StateChanged += BroadcastStateAsync;
         Volatile.Write(ref _lastActivityTicks, DateTimeOffset.UtcNow.UtcTicks);
@@ -44,6 +51,8 @@ public sealed class HubServer : IDisposable
 
     /// <summary>Completes with the bound TCP port once the listener is accepting (useful for tests).</summary>
     public Task<int> Listening => _listening.Task;
+
+    public int ConnectionCount => _connections.Count;
 
     private bool AnySubscriber
     {
@@ -76,7 +85,7 @@ public sealed class HubServer : IDisposable
         Log.Info($"Voicemeeter hub listening on 127.0.0.1:{boundPort} (protocol v{HubProtocol.Version}).");
 
         using var shutdown = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        var idleTask = WatchIdleAsync(shutdown);
+        var idleTask = _idleTimeout.HasValue ? WatchIdleAsync(shutdown, _idleTimeout.Value) : Task.CompletedTask;
 
         try
         {
@@ -164,7 +173,7 @@ public sealed class HubServer : IDisposable
         if (tasks.Count > 0) await Task.WhenAll(tasks);
     }
 
-    private async Task WatchIdleAsync(CancellationTokenSource shutdown)
+    private async Task WatchIdleAsync(CancellationTokenSource shutdown, TimeSpan idleTimeout)
     {
         var cancellationToken = shutdown.Token;
         using var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
@@ -172,7 +181,7 @@ public sealed class HubServer : IDisposable
         {
             if (!_connections.IsEmpty) continue;
             var last = new DateTimeOffset(Volatile.Read(ref _lastActivityTicks), TimeSpan.Zero);
-            if (DateTimeOffset.UtcNow - last < IdleTimeout) continue;
+            if (DateTimeOffset.UtcNow - last < idleTimeout) continue;
             Log.Info("Voicemeeter hub idle timeout reached; shutting down.");
             shutdown.Cancel();
             return;

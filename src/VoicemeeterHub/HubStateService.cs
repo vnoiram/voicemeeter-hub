@@ -18,7 +18,7 @@ public sealed class HubStateService : IDisposable
     private readonly Func<bool> _hasSubscribers;
     private readonly CancellationTokenSource _disposeCancellation = new();
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
-    private readonly Timer _timer;
+    private readonly System.Threading.Timer _timer;
     private int _disposed;
 
     public HubStateService(IVoicemeeterClient client, Func<bool> hasSubscribers, TimeSpan? pollInterval = null)
@@ -26,7 +26,7 @@ public sealed class HubStateService : IDisposable
         _client = client;
         _hasSubscribers = hasSubscribers;
         var interval = pollInterval ?? TimeSpan.FromSeconds(1);
-        _timer = new Timer(_ => _ = TickAsync(), null, interval, interval);
+        _timer = new System.Threading.Timer(_ => _ = TickAsync(), null, interval, interval);
     }
 
     /// <summary>Raised after each successful refresh so the server can broadcast to subscribers.</summary>

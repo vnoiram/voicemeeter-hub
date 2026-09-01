@@ -115,7 +115,7 @@ Same surface as the `IVoicemeeterClient` interface. Arguments are named.
 ## Lifecycle
 
 - One server instance per machine, guarded by a global mutex; a second launch exits immediately.
-- The server exits after 60s with no connected clients, releasing the Remote API session. Clients
-  restart it on demand (see the client's launch logic).
+- The Windows executable runs as a tray-resident app and remains active until the user chooses
+  Exit from the tray menu. Clients discover the running server through the endpoint file.
 - On a Remote API `-2` (disconnect after sleep/reboot/Voicemeeter restart) the server logs out the
   stale session, logs in again, and retries the call once before surfacing an error.

@@ -75,7 +75,7 @@ pwsh scripts/build-installer.ps1 -Version 0.2.0
 
 - `%LOCALAPPDATA%\voicemeeter-hub\` に導入 — **管理者権限不要**
 - **環境変数も不要**: このパスは Stream Dock プラグインが既に探索する場所なので、プラグインが hub を自動発見・自動起動する
-- サイレントインストール対応（`voicemeeter-hub-<ver>-setup.exe /VERYSILENT`）。任意で「サインイン時に自動起動」タスクあり（既定オフ。クライアントが必要時に起動するため）
+- サイレントインストール対応（`voicemeeter-hub-<ver>-setup.exe /VERYSILENT`）。「サインイン時に自動起動」タスクあり（トレイ常駐用に既定オン）
 
 他アプリは `%LOCALAPPDATA%\voicemeeter-hub\endpoint.json` で稼働中の hub を発見できる。起動もさせたい場合は `VOICEMEETER_HUB_EXE` にインストール先パスを設定する。
 
@@ -95,6 +95,7 @@ git push origin v0.2.0   # -> ビルドしてリリースを発行
 
 - 二重起動を拒否（グローバル mutex。最初のインスタンスが給仕を続ける）、
 - ループバックで待ち受け、endpoint ファイルを書き出す、
-- 接続クライアントが 0 の状態が 60 秒続くと自動終了し、Remote API セッションを解放する。
+- コンソール窓を出さず Windows 通知領域に常駐する、
+- トレイメニューから状態表示、ログを開く、終了を実行できる。
 
-クライアント側で必要に応じて自動起動して接続する想定。
+サーバを止めたい場合はトレイメニューの「Exit」から終了する。クライアントは endpoint ファイルで稼働中の hub を発見して接続できる。

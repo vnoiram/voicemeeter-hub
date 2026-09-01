@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <!--
       net8.0-windows is the real runtime target (the exe is a Windows daemon that P/Invokes
       VoicemeeterRemote64.dll). The plain net8.0 target exists only so the test project can
@@ -19,6 +19,10 @@
     <Version>0.2.0</Version>
     <InvariantGlobalization>true</InvariantGlobalization>
     <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
+    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
   <ItemGroup>
