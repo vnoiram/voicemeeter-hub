@@ -9,3 +9,4 @@ installer/Output/
 endpoint.json
 startup-error.log
 .pre-push-check-ignore.md
+ai-design/
