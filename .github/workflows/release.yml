@@ -76,7 +76,9 @@ jobs:
         run: choco install innosetup --no-progress -y
 
       - name: Build installer
-        run: iscc "/DAppVersion=${{ needs.publish.outputs.version }}" "/DSourceDir=dist\hub" installer\voicemeeter-hub.iss
+        # Inno Setup resolves [Files] Source paths relative to the .iss file (installer/), so pass
+        # an absolute SourceDir to the downloaded payload rather than a cwd-relative one.
+        run: iscc "/DAppVersion=${{ needs.publish.outputs.version }}" "/DSourceDir=${{ github.workspace }}\dist\hub" installer\voicemeeter-hub.iss
 
       - name: Upload installer
         uses: actions/upload-artifact@v4
