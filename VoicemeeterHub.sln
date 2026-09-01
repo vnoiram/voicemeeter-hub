@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E45D7530-7959-4C82-A781-E5EBD8A1A073}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoicemeeterHub", "src\VoicemeeterHub\VoicemeeterHub.csproj", "{5C850840-DEDD-4F9E-A71B-5CD5D7E7027D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{9AD89208-5374-4C30-99C3-4625AE4C5F62}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoicemeeterHub.Tests", "tests\VoicemeeterHub.Tests\VoicemeeterHub.Tests.csproj", "{FF2473CF-A526-4897-B343-82AD50AC548F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5C850840-DEDD-4F9E-A71B-5CD5D7E7027D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C850840-DEDD-4F9E-A71B-5CD5D7E7027D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C850840-DEDD-4F9E-A71B-5CD5D7E7027D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C850840-DEDD-4F9E-A71B-5CD5D7E7027D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF2473CF-A526-4897-B343-82AD50AC548F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF2473CF-A526-4897-B343-82AD50AC548F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF2473CF-A526-4897-B343-82AD50AC548F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF2473CF-A526-4897-B343-82AD50AC548F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5C850840-DEDD-4F9E-A71B-5CD5D7E7027D} = {E45D7530-7959-4C82-A781-E5EBD8A1A073}
+		{FF2473CF-A526-4897-B343-82AD50AC548F} = {9AD89208-5374-4C30-99C3-4625AE4C5F62}
+	EndGlobalSection
+EndGlobal

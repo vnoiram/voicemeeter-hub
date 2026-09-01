@@ -1,0 +1,9 @@
+bin/
+obj/
+dist/
+*.log
+*.user
+.vs/
+.idea/
+endpoint.json
+startup-error.log

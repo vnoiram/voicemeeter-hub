@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # The test project targets net8.0 and fakes the native Remote API, so the protocol,
+      # dispatch, and WebSocket server all run on Linux.
+      - name: Test
+        run: dotnet test tests/VoicemeeterHub.Tests/VoicemeeterHub.Tests.csproj -c Release -p:EnableWindowsTargeting=true
+
+      # The shipping executable targets net8.0-windows; EnableWindowsTargeting lets it compile on
+      # the Linux runner even though it only runs on Windows.
+      - name: Build (net8.0-windows)
+        run: dotnet build src/VoicemeeterHub/VoicemeeterHub.csproj -c Release -f net8.0-windows -p:EnableWindowsTargeting=true

@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!--
+      net8.0-windows is the real runtime target (the exe is a Windows daemon that P/Invokes
+      VoicemeeterRemote64.dll). The plain net8.0 target exists only so the test project can
+      reference and run the platform-neutral parts (protocol, dispatch, WebSocket server) on any
+      OS; the DLL/registry paths are Windows-only at runtime and are exercised through a fake in
+      tests. CA1416 (the analyzer flagging that Windows-only usage under the net8.0 target) is
+      suppressed because those paths never run off Windows.
+    -->
+    <TargetFrameworks>net8.0;net8.0-windows</TargetFrameworks>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>VoicemeeterHub</AssemblyName>
+    <RootNamespace>VoicemeeterHub</RootNamespace>
+    <Version>0.1.0</Version>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="3.3.0" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="VoicemeeterHub.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\log4net.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>log4net.config</Link>
+    </Content>
+  </ItemGroup>
+
+</Project>

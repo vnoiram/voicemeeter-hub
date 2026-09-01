@@ -1,0 +1,83 @@
+# voicemeeter-hub
+
+English: [README.md](README.md)
+
+マシン全体で **VB-Audio Voicemeeter の Remote API セッションを1つだけ**所有するローカルな
+**WebSocket サービス**。複数のアプリが `VoicemeeterRemote64.dll` を奪い合うことなく、Voicemeeter の
+状態取得・操作を行えるようにする。
+
+## 背景
+
+Voicemeeter の Remote API は実質「1マシンにログインセッション1つ」の共有リソース。複数プロセスが
+それぞれ `VoicemeeterRemote64.dll` を読み込んで `VBVMR_Login`/`VBVMR_Logout` を呼ぶと、セッションを
+奪い合い、各自が状態ポーリングを重複して回す。`voicemeeter-hub` はこれを一元化する:
+
+- DLL を読み込みログインセッションを持つプロセスは **1つだけ**。
+- **サーバ側の唯一のポーラー**がパラメータ変化を検知し、購読中の全クライアントへ状態を **push** する。
+  クライアントは各自ポーリングしなくてよい。
+- クライアントは native DLL をリンクせず、ループバック上の小さな **WebSocket + JSON** プロトコルで話す。
+
+Stream Dock の Voicemeeter プラグインが最初のクライアント。スクリプトや他プラグインなど、WebSocket を
+話せるものなら何でも接続できる。
+
+## プロトコル
+
+詳細は [`docs/protocol.md`](docs/protocol.md)。要点:
+
+- `ws://127.0.0.1:50505/`（既定ポート。`VOICEMEETER_HUB_PORT` または `--port` で上書き可）。
+- リクエスト/レスポンス: `{ "id", "op", "args" }` → `{ "type": "response", "id", "result" | "error" }`。
+- 状態 push: `{ "op": "Subscribe" }` を送ると `{ "type": "event", "topic": "state", "data": { ...snapshot... } }` が届く。
+- ディスカバリ: 起動中のサーバが `%LOCALAPPDATA%\voicemeeter-hub\endpoint.json` に実ポートを書き出す。
+
+## 構成
+
+- `src/VoicemeeterHub/` — サーバ実行ファイル本体。
+  - `VoicemeeterClient.cs` — P/Invoke ラッパーとログインセッション管理（native DLL に触れる唯一のコード）。
+  - `HubServer.cs` / `HubConnection.cs` / `WebSocketHandshake.cs` — ループバック WebSocket サーバ。
+  - `HubStateService.cs` — サーバ側の唯一の状態ポーラー兼ブロードキャスタ。
+  - `VoicemeeterOperations.cs` / `HubProtocol.cs` — operation ディスパッチとワイヤ契約。
+- `tests/VoicemeeterHub.Tests/` — プロトコル・ディスパッチ・ハンドシェイク、および Remote API を
+  フェイク化した WebSocket のエンドツーエンドテスト（どの OS でも実行可能）。
+- `docs/protocol.md` — プロトコル仕様。
+
+## ランタイムターゲット
+
+exe は `net8.0-windows`（Windows 常駐プロセス）。プロジェクトは、プラットフォーム非依存の部分と
+テストをどの OS でもビルド/実行できるようにするためだけに、素の `net8.0` もマルチターゲットする。
+DLL・レジストリ経路は実行時 Windows 専用で、テストではフェイク化される。
+
+## ビルドとテスト
+
+このワークスペースでは `.NET` ビルドはホストではなく Docker で行う。
+
+```bash
+# Linux の .NET SDK コンテナで両ターゲットをコンパイルし、テストを実行。
+bash scripts/test-in-linux-docker.sh
+```
+
+Windows 向けの自己完結 exe をローカルで発行:
+
+```powershell
+pwsh scripts/publish.ps1
+# -> dist/hub/VoicemeeterHub.exe
+```
+
+## CI とリリース
+
+- `.github/workflows/ci.yml` — `main` への push と PR ごとにテストと `net8.0-windows` ビルドを実行（Ubuntu ランナー、`EnableWindowsTargeting`）。
+- `.github/workflows/release.yml` — `v*` タグの push で起動。テスト後、自己完結 single-file の `win-x64` `VoicemeeterHub.exe` をクロス発行し、zip して生成した GitHub Release に添付する。タグ（先頭 `v` を除く）がアセンブリバージョンになる。
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0   # -> ビルドしてリリースを発行
+```
+
+## 実行
+
+`VoicemeeterHub.exe` を起動すると:
+
+- 二重起動を拒否（グローバル mutex。最初のインスタンスが給仕を続ける）、
+- ループバックで待ち受け、endpoint ファイルを書き出す、
+- 接続クライアントが 0 の状態が 60 秒続くと自動終了し、Remote API セッションを解放する。
+
+クライアント側で必要に応じて自動起動して接続する想定。
