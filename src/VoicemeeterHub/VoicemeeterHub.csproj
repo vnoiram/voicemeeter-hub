@@ -16,7 +16,7 @@
     <Nullable>enable</Nullable>
     <AssemblyName>VoicemeeterHub</AssemblyName>
     <RootNamespace>VoicemeeterHub</RootNamespace>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <InvariantGlobalization>true</InvariantGlobalization>
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>

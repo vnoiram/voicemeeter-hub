@@ -67,8 +67,8 @@ pwsh scripts/publish.ps1
 Build the per-user installer locally (needs Inno Setup / `iscc` on PATH):
 
 ```powershell
-pwsh scripts/build-installer.ps1 -Version 0.1.0
-# -> installer/Output/voicemeeter-hub-0.1.0-setup.exe
+pwsh scripts/build-installer.ps1 -Version 0.2.0
+# -> installer/Output/voicemeeter-hub-0.2.0-setup.exe
 ```
 
 ## Installing
@@ -96,8 +96,8 @@ or set `VOICEMEETER_HUB_EXE` to the installed path to have them launch it too.
   installer version.
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0   # -> builds and publishes the release
+git tag v0.2.0
+git push origin v0.2.0   # -> builds and publishes the release
 ```
 
 ## Running

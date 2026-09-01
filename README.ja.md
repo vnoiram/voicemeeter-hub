@@ -65,8 +65,8 @@ pwsh scripts/publish.ps1
 per-user インストーラをローカルでビルド（Inno Setup / `iscc` が PATH に必要）:
 
 ```powershell
-pwsh scripts/build-installer.ps1 -Version 0.1.0
-# -> installer/Output/voicemeeter-hub-0.1.0-setup.exe
+pwsh scripts/build-installer.ps1 -Version 0.2.0
+# -> installer/Output/voicemeeter-hub-0.2.0-setup.exe
 ```
 
 ## インストール
@@ -85,8 +85,8 @@ pwsh scripts/build-installer.ps1 -Version 0.1.0
 - `.github/workflows/release.yml` — `v*` タグの push で3ジョブ実行。(1) Ubuntu でテスト＋自己完結 single-file `win-x64` `VoicemeeterHub.exe` と zip を生成、(2) Windows でそのペイロードから per-user Inno Setup インストーラをビルド、(3) zip とインストーラを生成した GitHub Release に添付。タグ（先頭 `v` を除く）がアセンブリ／インストーラのバージョンになる。
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0   # -> ビルドしてリリースを発行
+git tag v0.2.0
+git push origin v0.2.0   # -> ビルドしてリリースを発行
 ```
 
 ## 実行
