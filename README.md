@@ -64,13 +64,36 @@ pwsh scripts/publish.ps1
 # -> dist/hub/VoicemeeterHub.exe
 ```
 
+Build the per-user installer locally (needs Inno Setup / `iscc` on PATH):
+
+```powershell
+pwsh scripts/build-installer.ps1 -Version 0.1.0
+# -> installer/Output/voicemeeter-hub-0.1.0-setup.exe
+```
+
+## Installing
+
+The recommended install is the per-user installer (`voicemeeter-hub-<ver>-setup.exe` from a
+release, or built locally). It:
+
+- installs into `%LOCALAPPDATA%\voicemeeter-hub\` — **no administrator rights required**,
+- needs **no environment variable**: that path is exactly where the Stream Dock plugin already
+  looks, so the plugin auto-discovers and launches the hub,
+- supports silent install (`voicemeeter-hub-<ver>-setup.exe /VERYSILENT`) and offers an optional
+  "start at sign-in" task (off by default, since clients start the hub on demand).
+
+Other applications can find the running hub through `%LOCALAPPDATA%\voicemeeter-hub\endpoint.json`,
+or set `VOICEMEETER_HUB_EXE` to the installed path to have them launch it too.
+
 ## CI and releases
 
 - `.github/workflows/ci.yml` runs the test suite and builds the `net8.0-windows` executable on
   every push to `main` and every pull request (Ubuntu runner, `EnableWindowsTargeting`).
-- `.github/workflows/release.yml` runs on a `v*` tag: it tests, cross-publishes a self-contained
-  single-file `win-x64` `VoicemeeterHub.exe`, zips it, and attaches it to a generated GitHub
-  Release. The tag (minus the leading `v`) becomes the assembly version.
+- `.github/workflows/release.yml` runs on a `v*` tag in three jobs: (1) test and cross-publish the
+  self-contained single-file `win-x64` `VoicemeeterHub.exe` and a zip on Ubuntu, (2) build the
+  per-user Inno Setup installer on Windows from that payload, (3) attach both the zip and the
+  installer to a generated GitHub Release. The tag (minus the leading `v`) becomes the assembly and
+  installer version.
 
 ```bash
 git tag v0.1.0

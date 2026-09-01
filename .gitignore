@@ -1,9 +1,11 @@
 bin/
 obj/
 dist/
+installer/Output/
 *.log
 *.user
 .vs/
 .idea/
 endpoint.json
 startup-error.log
+.pre-push-check-ignore.md

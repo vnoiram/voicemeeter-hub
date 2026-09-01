@@ -8,8 +8,11 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  # 1. Cross-publish the self-contained single-file win-x64 executable on Linux and package a zip.
+  publish:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.value }}
     steps:
       - uses: actions/checkout@v4
 
@@ -24,7 +27,6 @@ jobs:
       - name: Test
         run: dotnet test tests/VoicemeeterHub.Tests/VoicemeeterHub.Tests.csproj -c Release -p:EnableWindowsTargeting=true
 
-      # Cross-publish a self-contained single-file win-x64 executable from the Linux runner.
       - name: Publish (win-x64, self-contained)
         run: >
           dotnet publish src/VoicemeeterHub/VoicemeeterHub.csproj
@@ -37,13 +39,70 @@ jobs:
           -p:Version=${{ steps.version.outputs.value }}
           -o dist/hub
 
-      - name: Package
+      - name: Drop debug symbols from the payload
+        run: rm -f dist/hub/*.pdb
+
+      - name: Package zip
         run: |
           cd dist/hub
-          zip -r "../voicemeeter-hub-${GITHUB_REF_NAME}-win-x64.zip" . -x '*.pdb'
+          zip -r "../voicemeeter-hub-${GITHUB_REF_NAME}-win-x64.zip" .
+
+      - name: Upload publish output
+        uses: actions/upload-artifact@v4
+        with:
+          name: hub-publish
+          path: dist/hub/
+
+      - name: Upload zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: hub-zip
+          path: dist/voicemeeter-hub-*-win-x64.zip
+
+  # 2. Build the per-user Inno Setup installer on Windows from the published payload.
+  installer:
+    needs: publish
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download publish output
+        uses: actions/download-artifact@v4
+        with:
+          name: hub-publish
+          path: dist/hub
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer
+        run: iscc "/DAppVersion=${{ needs.publish.outputs.version }}" "/DSourceDir=dist\hub" installer\voicemeeter-hub.iss
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: hub-installer
+          path: installer/Output/*.exe
+
+  # 3. Attach the zip and the installer to a generated GitHub Release.
+  release:
+    needs: [publish, installer]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download zip
+        uses: actions/download-artifact@v4
+        with:
+          name: hub-zip
+          path: artifacts
+
+      - name: Download installer
+        uses: actions/download-artifact@v4
+        with:
+          name: hub-installer
+          path: artifacts
 
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/voicemeeter-hub-*-win-x64.zip
+          files: artifacts/*
           generate_release_notes: true

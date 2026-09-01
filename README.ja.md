@@ -62,10 +62,27 @@ pwsh scripts/publish.ps1
 # -> dist/hub/VoicemeeterHub.exe
 ```
 
+per-user インストーラをローカルでビルド（Inno Setup / `iscc` が PATH に必要）:
+
+```powershell
+pwsh scripts/build-installer.ps1 -Version 0.1.0
+# -> installer/Output/voicemeeter-hub-0.1.0-setup.exe
+```
+
+## インストール
+
+推奨は per-user インストーラ（リリースの `voicemeeter-hub-<ver>-setup.exe`、またはローカルビルド）。特徴:
+
+- `%LOCALAPPDATA%\voicemeeter-hub\` に導入 — **管理者権限不要**
+- **環境変数も不要**: このパスは Stream Dock プラグインが既に探索する場所なので、プラグインが hub を自動発見・自動起動する
+- サイレントインストール対応（`voicemeeter-hub-<ver>-setup.exe /VERYSILENT`）。任意で「サインイン時に自動起動」タスクあり（既定オフ。クライアントが必要時に起動するため）
+
+他アプリは `%LOCALAPPDATA%\voicemeeter-hub\endpoint.json` で稼働中の hub を発見できる。起動もさせたい場合は `VOICEMEETER_HUB_EXE` にインストール先パスを設定する。
+
 ## CI とリリース
 
 - `.github/workflows/ci.yml` — `main` への push と PR ごとにテストと `net8.0-windows` ビルドを実行（Ubuntu ランナー、`EnableWindowsTargeting`）。
-- `.github/workflows/release.yml` — `v*` タグの push で起動。テスト後、自己完結 single-file の `win-x64` `VoicemeeterHub.exe` をクロス発行し、zip して生成した GitHub Release に添付する。タグ（先頭 `v` を除く）がアセンブリバージョンになる。
+- `.github/workflows/release.yml` — `v*` タグの push で3ジョブ実行。(1) Ubuntu でテスト＋自己完結 single-file `win-x64` `VoicemeeterHub.exe` と zip を生成、(2) Windows でそのペイロードから per-user Inno Setup インストーラをビルド、(3) zip とインストーラを生成した GitHub Release に添付。タグ（先頭 `v` を除く）がアセンブリ／インストーラのバージョンになる。
 
 ```bash
 git tag v0.1.0
