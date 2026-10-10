@@ -107,7 +107,9 @@ Launch `VoicemeeterHub.exe`. It:
 - refuses to start a second instance (a global mutex; the first instance keeps serving),
 - listens on loopback and writes the endpoint file,
 - stays resident in the Windows notification area without opening a console window,
-- shows a tray menu with status, log opening, and exit actions.
+- shows a tray menu with status, log opening, audio engine restart, settings, and exit actions.
+
+The tray "Settings..." dialog lets you assign a global hotkey (Ctrl/Alt/Win + A-Z, 0-9 or F1-F24) that restarts the Voicemeeter audio engine; it is stored in `%APPDATA%\VoicemeeterHub\settings.json`. No hotkey is set by default.
 
 Exit it from the tray menu when you want to stop the server. Clients can discover the running hub
 through the endpoint file and connect.
